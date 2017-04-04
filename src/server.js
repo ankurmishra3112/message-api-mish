@@ -3,10 +3,22 @@
  */
 var express = require("express");
 var app = express();
+var __secretKey = "tomato";
 
 var PORT = process.env.PORT || 3000;
 var bodyParser = require("body-parser");
 var _ = require("underscore");
+
+var middleware = {
+    authForDel: function (req,res,next) {
+        req.flag = false;
+        if(req.body.key === __secretKey){
+            req.flag = true;
+        }
+        next();
+    }
+};
+
 app.use(bodyParser.json());
 
 var db = require("./db.js");
@@ -34,22 +46,27 @@ app.get("/message", function (req,res) {
 });
 
 //DELETE /message
-app.delete("/message/:id", function (req,res) {
-    var msgId = parseInt(req.params.id);
-    var where = {};
-    where.id = msgId;
-    db.message.destroy({
-        where: where
-    }).then(function(status) {
-        console.log(status);
-        if (status===0){
-            res.status(404).send();
-        }else{
-            res.status(204).send();
-        }
-    },function (e) {
-        res.status(500).send();
-    })
+app.delete("/message/:id",middleware.authForDel, function (req,res) {
+    if (req.flag){
+        var msgId = parseInt(req.params.id);
+        var where = {};
+        where.id = msgId;
+        db.message.destroy({
+            where: where
+        }).then(function(status) {
+            console.log(status);
+            if (status===0){
+                res.status(404).send();
+            }else{
+                res.status(204).send();
+            }
+        },function (e) {
+            res.status(500).send();
+        });
+    }
+    else{
+        res.status(401).send();
+    }
 });
 
 //PUT /message
