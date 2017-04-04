@@ -45,6 +45,20 @@ app.get("/message", function (req,res) {
     });
 });
 
+//GET /message/:id
+app.get("/message/:id",function (req,res) {
+    var msgId = parseInt(req.params.id);
+    db.message.findById(msgId).then(function (msg) {
+        if (msg){
+            res.json(msg);
+        }else{
+            res.status(404).send();
+        }
+    },function (e) {
+        res.status(500).send();
+    })
+});
+
 //DELETE /message
 app.delete("/message/:id",middleware.authForDel, function (req,res) {
     if (req.flag){
@@ -70,6 +84,33 @@ app.delete("/message/:id",middleware.authForDel, function (req,res) {
 });
 
 //PUT /message
+app.put("/message/:id", function (req,res) {
+    var msgId = parseInt(req.params.id);
+    var body = _.pick(req.body, "text");
+    var attributes = {};
+
+    if (body.hasOwnProperty("text")){
+        attributes.text = body.text;
+    }
+
+    db.message.findById(msgId).then(function (msg) {
+        if (msg){
+            msg.update(attributes).then(function (msg) {
+                res.json(msg.toJSON());
+            },function (e) {
+                res.status(400).json(e);
+            });
+        }
+        else{
+            res.status(404).send();
+        }
+    },function (e) {
+        res.status(500).send();
+
+    })
+});
+
+
 
 db.sequelize.sync().then(function () {
     app.listen(PORT, function () {
