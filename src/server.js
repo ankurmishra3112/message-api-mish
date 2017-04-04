@@ -33,8 +33,26 @@ app.get("/message", function (req,res) {
     });
 });
 
+//DELETE /message
+app.delete("/message/:id", function (req,res) {
+    var msgId = parseInt(req.params.id);
+    var where = {};
+    where.id = msgId;
+    db.message.destroy({
+        where: where
+    }).then(function(status) {
+        console.log(status);
+        if (status===0){
+            res.status(404).send();
+        }else{
+            res.status(204).send();
+        }
+    },function (e) {
+        res.status(500).send();
+    })
+});
 
-
+//PUT /message
 
 db.sequelize.sync().then(function () {
     app.listen(PORT, function () {
