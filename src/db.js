@@ -8,7 +8,7 @@ var sequelize = new Sequelize(undefined,undefined,undefined, {
 });
 
 var db = {};
-db.msg = sequelize.import("../models/msg.js");
+db.message = sequelize.import("../models/msg.js");
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
